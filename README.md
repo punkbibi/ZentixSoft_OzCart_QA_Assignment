@@ -43,6 +43,8 @@ The project covers manual test strategy, defect reporting with evidence, structu
     └── tests/
         ├── product.spec.js        # E2E UI tests for product interactions
         └── api-bonus.spec.js      # API automation specs via Playwright context
+```
+
 🚀 Quick Start Guide
 1. E2E UI & API Tests (Playwright)
 Navigate to the Part5_Automation directory to install dependencies and execute the automated Playwright test suite.
