@@ -1,0 +1,15 @@
+{
+  "name": "zentixsoft-ozcart-playwright",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ZentixSoft QA assignment - OzCart UI automation",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}

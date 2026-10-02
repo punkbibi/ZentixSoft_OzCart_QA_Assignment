@@ -1,0 +1,385 @@
+{
+  "info": {
+    "name": "ZentixSoft - Swagger Petstore",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Part 4 Postman collection for the ZentixSoft QA assignment. Uses an environment variable for the created Pet ID."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://petstore.swagger.io/v2"
+    },
+    {
+      "key": "petId",
+      "value": ""
+    },
+    {
+      "key": "petName",
+      "value": "ZentixSoft Test Pet"
+    },
+    {
+      "key": "updatedPetName",
+      "value": "ZentixSoft Updated Pet"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Create Pet - Valid",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": {{$timestamp}},\n  \"category\": {\"id\": 1001, \"name\": \"zentixsoft-category\"},\n  \"name\": \"{{petName}}\",\n  \"photoUrls\": [\"https://example.com/zentixsoft-pet.jpg\"],\n  \"tags\": [{\"id\":1,\"name\":\"qa\"},{\"id\":2,\"name\":\"assignment\"}],\n  \"status\": \"available\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is successful', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+              "const body = pm.response.json();",
+              "pm.test('ID is returned', () => pm.expect(body.id).to.exist);",
+              "pm.test('Name is returned', () => pm.expect(body.name).to.eql(pm.collectionVariables.get('petName')));",
+              "pm.test('Status is returned', () => pm.expect(body.status).to.eql('available'));",
+              "pm.test('Category is returned', () => pm.expect(body.category).to.exist);",
+              "pm.test('Tags are returned', () => pm.expect(body.tags).to.be.an('array'));",
+              "pm.test('Photo URLs are returned', () => pm.expect(body.photoUrls).to.be.an('array'));",
+              "pm.collectionVariables.set('petId', String(body.id));",
+              "pm.collectionVariables.set('petCategory', JSON.stringify(body.category));",
+              "pm.collectionVariables.set('petTags', JSON.stringify(body.tags));",
+              "pm.collectionVariables.set('petPhotoUrls', JSON.stringify(body.photoUrls));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 Create Pet - Missing Required Fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": {{$timestamp}},\n  \"category\": {\"id\":1001,\"name\":\"zentixsoft-category\"},\n  \"status\": \"available\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response is captured for analysis', () => pm.expect(pm.response.code).to.be.a('number'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Retrieve Pet - Valid",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet/{{petId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('ID matches stored Pet ID', () => pm.expect(String(body.id)).to.eql(pm.collectionVariables.get('petId')));",
+              "pm.test('Name matches', () => pm.expect(body.name).to.eql(pm.collectionVariables.get('petName')));",
+              "pm.test('Status matches', () => pm.expect(body.status).to.eql('available'));",
+              "pm.test('Category matches created object', () => pm.expect(JSON.stringify(body.category)).to.eql(pm.collectionVariables.get('petCategory')));",
+              "pm.test('Tags match created object', () => pm.expect(JSON.stringify(body.tags)).to.eql(pm.collectionVariables.get('petTags')));",
+              "pm.test('Photo URLs match created object', () => pm.expect(JSON.stringify(body.photoUrls)).to.eql(pm.collectionVariables.get('petPhotoUrls')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Retrieve Pet - Missing Required Path Value",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response is captured for analysis', () => pm.expect(pm.response.code).to.be.a('number'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Update Pet - Valid",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": {{petId}},\n  \"category\": {\"id\":1001,\"name\":\"zentixsoft-category\"},\n  \"name\": \"{{updatedPetName}}\",\n  \"photoUrls\": [\"https://example.com/zentixsoft-pet.jpg\"],\n  \"tags\": [{\"id\":1,\"name\":\"qa\"},{\"id\":2,\"name\":\"assignment\"}],\n  \"status\": \"sold\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response is successful', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+              "const body = pm.response.json();",
+              "pm.test('Updated name is returned', () => pm.expect(body.name).to.eql(pm.collectionVariables.get('updatedPetName')));",
+              "pm.test('Updated status is returned', () => pm.expect(body.status).to.eql('sold'));",
+              "pm.test('ID remains unchanged', () => pm.expect(String(body.id)).to.eql(pm.collectionVariables.get('petId')));",
+              "pm.test('Tags remain present', () => pm.expect(body.tags).to.be.an('array'));",
+              "pm.test('Category unchanged', () => pm.expect(JSON.stringify(body.category)).to.eql(pm.collectionVariables.get('petCategory')));",
+              "pm.test('Photo URLs unchanged', () => pm.expect(JSON.stringify(body.photoUrls)).to.eql(pm.collectionVariables.get('petPhotoUrls')));",
+              "pm.test('Tags unchanged', () => pm.expect(JSON.stringify(body.tags)).to.eql(pm.collectionVariables.get('petTags')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Update Pet - Missing Required Body",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet",
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response is captured for analysis', () => pm.expect(pm.response.code).to.be.a('number'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Find Pets by Status - Valid",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet/findByStatus?status=available"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('Response is an array', () => pm.expect(body).to.be.an('array'));",
+              "pm.test('Every pet is available', () => body.forEach(pet => pm.expect(pet.status).to.eql('available')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Find Pets by Status - Missing Required Query",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet/findByStatus"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response is captured for analysis', () => pm.expect(pm.response.code).to.be.a('number'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Delete Pet - Valid",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet/{{petId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response is successful', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Verify Deleted Pet - Not Found",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/pet/{{petId}}",
+        "description": "Verify the deleted Pet can no longer be retrieved."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Deleted pet is no longer available', () => pm.expect(pm.response.code).to.be.oneOf([400, 404]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Delete Pet - Missing Required Path Value",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response is captured for analysis', () => pm.expect(pm.response.code).to.be.a('number'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "NEG-01 Retrieve Nonexistent Pet",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet/999999999"
+      }
+    },
+    {
+      "name": "NEG-02 Find Pets with Invalid Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet/findByStatus?status=invalid-status"
+      }
+    },
+    {
+      "name": "NEG-03 Create Pet without name or photoUrls",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pet",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"available\"\n}"
+        }
+      }
+    }
+  ]
+}
